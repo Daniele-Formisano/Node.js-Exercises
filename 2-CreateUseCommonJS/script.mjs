@@ -1,3 +1,3 @@
-import { displayMessage } from "./displayMessage.mjs";
+import displayMessage from "./displayMessage.mjs";
 
 displayMessage("Hello World!");
