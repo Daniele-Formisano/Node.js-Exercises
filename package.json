@@ -1,0 +1,20 @@
+{
+  "name": "node.js-exercises",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Daniele-Formisano/Node.js-Exercises#readme",
+  "bugs": {
+    "url": "https://github.com/Daniele-Formisano/Node.js-Exercises/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Daniele-Formisano/Node.js-Exercises.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "1-CreateSumScript.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
