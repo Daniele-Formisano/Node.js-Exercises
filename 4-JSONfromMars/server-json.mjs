@@ -12,6 +12,6 @@ const server = createServer((request, response) => {
   response.end(jsonResponseBody);
 });
 
-server.listen(3000, () => {
-  console.log(`Server running at http://localhost:3000`);
+server.listen(3001, () => {
+  console.log(`Server running at http://localhost:3001`);
 });
