@@ -6,6 +6,6 @@
     "module": "es6",
     "target": "ES6"
   },
-  "include": ["**/*.ts"],
+  "include": ["./src/**/*.ts"],
   "exclude": ["./src/**/*.test.js"]
 }
