@@ -1,13 +1,15 @@
 import express from "express";
 import morgan from "morgan";
 import Joi from "joi";
+
+import pgPromise from "pg-promise";
 import {
   create,
   deleteById,
   getAll,
   getOneById,
   updateById,
-} from "./controllers/planets";
+} from "./controllers/planets.js";
 
 const app = express();
 const port = 3001;

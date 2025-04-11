@@ -1,15 +1,7 @@
+import { log } from "console";
 import { Request, Response } from "express";
 import Joi from "joi";
-
-type Planet = {
-  id: number;
-  name: string;
-};
-
-let planets: Planet[] = [
-  { id: 1, name: "Earth" },
-  { id: 2, name: "Mars" },
-];
+import pgPromise from "pg-promise";
 
 // Joi schema for planet validation
 const planetSchema = Joi.object({
@@ -17,12 +9,39 @@ const planetSchema = Joi.object({
   name: Joi.string().min(1).required(),
 });
 
-const getAll = (request: Request, response: Response) => {
+const planetSchema2 = Joi.object({
+  name: Joi.string().min(1).required(),
+});
+
+const db = pgPromise()(
+  "postgres://postgres:1234567890@localhost:5432/myserver"
+);
+console.log(db);
+
+const setupDb = async () => {
+  db.none(`
+      DROP TABLE IF EXISTS planets;
+    
+      CREATE TABLE planets (
+        id SERIAL NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL
+      )
+    `);
+
+  await db.none(`INSERT INTO planets (name) VALUES ('Earth')`);
+  await db.none(`INSERT INTO planets (name) VALUES ('Mars')`);
+  await db.none(`INSERT INTO planets (name) VALUES ('Jupiter')`);
+};
+setupDb();
+
+const getAll = async (request: Request, response: Response) => {
+  const planets = await db.many(`SELECT * FROM planets`);
+
   response.status(200).json(planets);
 };
-const getOneById = (request: Request, response: Response) => {
+const getOneById = async (request: Request, response: Response) => {
   const { id } = request.params;
-  const planet = planets.find((p) => p.id === Number(id));
+  const planet = await db.one(`SELECT * FROM planets WHERE id=$1`, Number(id));
 
   if (!planet) {
     return response.status(404).json({ msg: "Planet not found!" });
@@ -31,45 +50,36 @@ const getOneById = (request: Request, response: Response) => {
   response.status(200).json(planet);
 };
 
-const create = (request: Request, response: Response) => {
+const create = async (request: Request, response: Response) => {
+  const { name } = request.body;
+  const newPlanet = { name };
+
   // validazione con joi dei dati in arrivo
-  const { error } = planetSchema.validate(request.body);
+  const { error } = planetSchema2.validate(request.body);
   if (error) {
     return response.status(400).json({ msg: error.details[0].message });
   }
-
-  const { id, name } = request.body;
-  const newPlanet: Planet = { id, name };
-  planets = [...planets, newPlanet];
-
+  await db.none(`INSERT INTO planets (name) VALUES ($1)`, name);
   response.status(201).json({ msg: "Added planet" });
 };
 
-const updateById = (request: Request, response: Response) => {
+const updateById = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const { name } = request.body;
   // validazione con joi dei dati in arrivo
   const { error } = planetSchema.validate(request.body);
   if (error) {
     return response.status(400).json({ msg: error.details[0].message });
   }
-
-  const { id } = request.params;
-  const { name } = request.body;
-  planets = planets.map((p) => (p.id === Number(id) ? { ...p, name } : p));
+  await db.none(`UPDATE planets SET name=$2 WHERE id=$1`, [Number(id), name]);
 
   response.status(200).json({ msg: "Planet updated" });
 };
 
-const deleteById = (request: Request, response: Response) => {
+const deleteById = async (request: Request, response: Response) => {
   const { id } = request.params;
 
-  // Trova l'indice del pianeta con l'ID corrispondente
-  const planetIndex = planets.findIndex((p) => p.id === Number(id));
-  if (planetIndex === -1) {
-    return response.status(404).json({ msg: "Planet not found!" });
-  }
-
-  planets = planets.filter((p) => p.id !== Number(id));
-
+  await db.none(`DELETE FROM planets WHERE id=$1`, Number(id));
   response.status(200).json({ msg: "Planet deleted" });
 };
 
