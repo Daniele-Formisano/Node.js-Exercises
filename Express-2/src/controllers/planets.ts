@@ -24,7 +24,8 @@ const setupDb = async () => {
     
       CREATE TABLE planets (
         id SERIAL NOT NULL PRIMARY KEY,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        image TEXT
       )
     `);
 
@@ -41,7 +42,10 @@ const getAll = async (request: Request, response: Response) => {
 };
 const getOneById = async (request: Request, response: Response) => {
   const { id } = request.params;
-  const planet = await db.one(`SELECT * FROM planets WHERE id=$1`, Number(id));
+  const planet = await db.oneOrNone(
+    `SELECT * FROM planets WHERE id=$1`,
+    Number(id)
+  );
 
   if (!planet) {
     return response.status(404).json({ msg: "Planet not found!" });
@@ -67,7 +71,7 @@ const updateById = async (request: Request, response: Response) => {
   const { id } = request.params;
   const { name } = request.body;
   // validazione con joi dei dati in arrivo
-  const { error } = planetSchema.validate(request.body);
+  const { error } = planetSchema2.validate(request.body);
   if (error) {
     return response.status(400).json({ msg: error.details[0].message });
   }
@@ -83,4 +87,17 @@ const deleteById = async (request: Request, response: Response) => {
   response.status(200).json({ msg: "Planet deleted" });
 };
 
-export { getAll, getOneById, create, updateById, deleteById };
+const createImage = async (request: Request, response: Response) => {
+  console.log(request.file);
+  const { id } = request.params;
+  const filename = request.file?.path;
+
+  if (filename) {
+    db.none(`UPDATE planets SET image=$2 WHERE id=$1`, [id, filename]);
+    response.status(201).json({ msg: "File uploaded successfully" });
+  } else {
+    response.status(400).json({ msg: "Error uploading the file" });
+  }
+};
+
+export { getAll, getOneById, create, updateById, deleteById, createImage };
