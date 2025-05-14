@@ -12,6 +12,7 @@ import {
   getOneById,
   updateById,
 } from "./controllers/planets.js";
+import { logIn } from "./controllers/users.js";
 
 const app = express();
 const port = 3001;
@@ -44,6 +45,8 @@ app.put("/api/planets/:id", updateById);
 app.delete("/api/planets/:id", deleteById);
 
 app.post("/api/planets/:id/image", upload.single("image"), createImage);
+
+app.post("/api/users/login", logIn);
 
 app.listen(port, () => {
   console.log(`Server in ascolto a http://localhost:${port}`);
